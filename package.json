@@ -1,0 +1,15 @@
+{
+  "name": "puppetmaster",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "QA harness for Vite apps and static HTML with Playwright + GPT-5-mini.",
+  "scripts": {
+    "qa": "node src/qa.js",
+    "install:browsers": "npx playwright install --with-deps",
+    "lint": "node -e \"console.log('no lint configured')\""
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}
