@@ -1,6 +1,6 @@
 ﻿import fs from 'node:fs';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { chromium } from 'playwright';
 
 const sweepDir = 'C:/projects/sweepweave-ts/sweepweave-ts';
@@ -171,7 +171,15 @@ async function main() {
     fs.writeFileSync(outPath, JSON.stringify(report, null, 2), 'utf-8');
     console.log(outPath);
   } finally {
-    vite.kill('SIGTERM');
+    if (process.platform === 'win32') {
+      try {
+        spawnSync('taskkill', ['/pid', String(vite.pid), '/T', '/F'], { stdio: 'ignore' });
+      } catch {
+        // best-effort shutdown
+      }
+    } else {
+      vite.kill('SIGTERM');
+    }
   }
 }
 
