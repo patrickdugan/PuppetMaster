@@ -1,0 +1,3 @@
+runs/*
+!runs/example-meta-prompt.txt
+!runs/README.md

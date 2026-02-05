@@ -22,12 +22,12 @@ export async function callVisionJudge({ prompt, images, metadata }) {
   const input = [
     {
       role: 'system',
-      content: [{ type: 'text', text: prompt }]
+      content: [{ type: 'input_text', text: prompt }]
     },
     {
       role: 'user',
       content: [
-        { type: 'text', text: JSON.stringify(metadata, null, 2) },
+        { type: 'input_text', text: JSON.stringify(metadata, null, 2) },
         ...images.map((img) => ({
           type: 'input_image',
           image_url: `data:image/png;base64,${img}`
@@ -39,7 +39,6 @@ export async function callVisionJudge({ prompt, images, metadata }) {
   const body = {
     model: process.env.OPENAI_MODEL || 'gpt-5-mini',
     input,
-    temperature: 0.2,
   };
 
   const res = await fetch(API_URL, {
@@ -57,8 +56,17 @@ export async function callVisionJudge({ prompt, images, metadata }) {
   }
 
   const json = await res.json();
-  const content = json.output?.[0]?.content?.map((c) => c.text).join('') || '';
-  return content.trim();
+  const parts = [];
+  const outputItems = Array.isArray(json.output) ? json.output : [];
+  for (const item of outputItems) {
+    const contentItems = Array.isArray(item.content) ? item.content : [];
+    for (const c of contentItems) {
+      if (typeof c?.text === 'string') parts.push(c.text);
+    }
+  }
+  let content = parts.join('').trim();
+  if (!content && typeof json.output_text === 'string') content = json.output_text.trim();
+  return content;
 }
 
 export function parseJudgeResponse(text) {

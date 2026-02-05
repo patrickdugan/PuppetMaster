@@ -7,7 +7,7 @@
   "scripts": {
     "qa": "node src/qa.js",
     "install:browsers": "npx playwright install --with-deps",
-    "lint": "node -e \"console.log('no lint configured')\""
+    "lint": "node scripts/lint.js"
   },
   "dependencies": {
     "playwright": "^1.49.0"

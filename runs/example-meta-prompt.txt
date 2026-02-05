@@ -1,0 +1,6 @@
+Task: Validate Firefox behavior for the Bitcoin network modal in TL-Web.
+- Open app at http://localhost:8080.
+- Click the Bitcoin logo (network button) to open the Select Network modal.
+- Ensure the modal and dropdown options are visible and the cancel button works.
+- Capture screenshots and call GPT-5-mini vision for descriptions to guide navigation.
+- Iterate on fixes until the dropdown shows 3 options and Cancel works in Firefox.
