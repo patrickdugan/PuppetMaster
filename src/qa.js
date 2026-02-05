@@ -9,13 +9,13 @@ import { startCommand, stopCommand } from './process.js';
 const args = parseArgs(process.argv);
 const target = args.target ? normalizePath(args.target) : null;
 if (!target) {
-  console.error('Usage: npm run qa -- --target <path> [--mode vite|static] [--url http://localhost:5173] [--cmd "npm run dev"]');
+  console.error('Usage: npm run qa -- --target <path> [--mode vite|static|webpack] [--url http://localhost:5173] [--cmd "npm run dev"]');
   process.exit(1);
 }
 
 const mode = args.mode || 'static';
 const url = args.url || 'http://localhost:4173';
-const cmd = args.cmd || 'npm run dev';
+const cmd = args.cmd || (mode === 'webpack' ? 'npm run start' : 'npm run dev');
 const maxDepth = Number(args.depth || 2);
 const maxIterations = Number(args.iterations || 3);
 
@@ -29,7 +29,7 @@ let server = null;
 let child = null;
 
 async function startTarget() {
-  if (mode === 'vite') {
+  if (mode === 'vite' || mode === 'webpack') {
     child = startCommand(cmd, path.dirname(target));
     const ok = await waitForUrl(url, 60000);
     if (!ok) throw new Error(`Vite server not reachable at ${url}`);
