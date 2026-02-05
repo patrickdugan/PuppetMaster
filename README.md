@@ -79,7 +79,14 @@ codex -i runs\<run-id>\iter_1.png -i runs\<run-id>\iter_2.png "Did the second sc
 4. Re-run QA and compare new artifacts to confirm improvements.
 5. Repeat until the judge returns a stable pass and manual spot checks agree.
 
+SweepWeave pValue probe:
+
+```powershell
+npm run qa:probe:sweepweave
+```
+
+This launches `sweepweave-ts`, loads the current diplomacy pValue storyworld set, runs a Rehearsal-tab probe, and writes a JSON report under `runs/` with reachability and console-error findings.
+
 ## Artifacts
 
 By default, run output is written under `runs/`. For large or long test sessions, point `PM_RUNS_DIR` to a larger disk location.
-

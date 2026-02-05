@@ -6,6 +6,7 @@
   "description": "QA harness for Vite apps and static HTML with Playwright + GPT-5-mini.",
   "scripts": {
     "qa": "node src/qa.js",
+    "qa:probe:sweepweave": "node scripts/probe-sweepweave-pvalues.mjs",
     "install:browsers": "npx playwright install --with-deps",
     "lint": "node scripts/lint.js"
   },
