@@ -56,6 +56,10 @@ async function capture(page, name) {
   const dialog = page.locator('mat-dialog-container, .mat-dialog-container');
   await dialog.waitFor({ state: 'visible', timeout: 15000 });
   await page.waitForTimeout(500);
+  const dialogHtml = await page.evaluate(() => {
+    const el = document.querySelector('mat-dialog-container, .mat-dialog-container');
+    return el ? el.innerHTML.slice(0, 2000) : null;
+  });
 
   const modalPath = await capture(page, '02-modal-open');
   await describeImage(modalPath, '02-modal-open');
@@ -93,19 +97,23 @@ async function capture(page, name) {
   const nativeSelectCount = await nativeSelect.count();
   const useNative = nativeSelectCount > 0;
   let panelAppeared = false;
+  let selectionError = null;
   if (useNative) {
-    await nativeSelect.selectOption({ index: 0 });
+    try {
+      await page.waitForFunction(() => {
+        return document.querySelectorAll('select.native-select option').length > 0;
+      }, null, { timeout: 3000 });
+    } catch {}
     await page.waitForTimeout(300);
-  } else {
-    if (matSelectCount === 0) {
-      throw new Error('No mat-select or native select found in modal');
-    }
+  } else if (matSelectCount > 0) {
     await page.locator('mat-select .mat-select-trigger').click({ force: true });
     try {
       await page.waitForSelector('.mat-select-panel', { state: 'attached', timeout: 800 });
       panelAppeared = true;
     } catch {}
     await page.waitForTimeout(600);
+  } else {
+    selectionError = 'No mat-select or native select found in modal';
   }
 
   const dropdownPath = await capture(page, '03-dropdown-open');
@@ -114,7 +122,6 @@ async function capture(page, name) {
   const optionCount = await page.locator('.mat-select-panel .mat-option').count();
   const panelCount = await page.locator('.mat-select-panel').count();
   const nativeOptionCount = await nativeSelect.locator('option').count();
-  const cancelVisible = await page.locator('button', { hasText: 'Cancel' }).isVisible().catch(() => false);
   const panelInfo = await page.evaluate(() => {
     const panel = document.querySelector('.mat-select-panel');
     if (!panel) return null;
@@ -132,7 +139,36 @@ async function capture(page, name) {
   const nativeOptionTexts = await page.evaluate(() => {
     return Array.from(document.querySelectorAll('select.native-select option')).map((el) => el.textContent?.trim()).filter(Boolean);
   });
+
+  let cancelClosed = false;
+  const cancelButton = page.locator('button', { hasText: 'Cancel' });
+  if (await cancelButton.isVisible().catch(() => false)) {
+    await cancelButton.click({ force: true }).catch(() => {});
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll('button')).find((b) =>
+        (b.textContent || '').trim().toLowerCase() === 'cancel'
+      );
+      if (btn) btn.click();
+    }).catch(() => {});
+    try {
+      await dialog.waitFor({ state: 'hidden', timeout: 10000 });
+      cancelClosed = true;
+    } catch {}
+  }
+  const afterCancelPath = await capture(page, '04-after-cancel');
+  await describeImage(afterCancelPath, '04-after-cancel');
+  const cancelVisible = await page.locator('button', { hasText: 'Cancel' }).isVisible().catch(() => false);
   const clickInfo = await page.evaluate(() => (window).__pm_clicks || null);
+
+  const dialogAfterCancel = await page.evaluate(() => {
+    const el = document.querySelector('mat-dialog-container, .mat-dialog-container');
+    if (!el) return null;
+    const style = getComputedStyle(el);
+    return { display: style.display, visibility: style.visibility, opacity: style.opacity };
+  });
+  const dialogCountAfterCancel = await page.evaluate(() => {
+    return document.querySelectorAll('mat-dialog-container, .mat-dialog-container').length;
+  });
 
   const summary = {
     optionCount,
@@ -148,7 +184,12 @@ async function capture(page, name) {
     userAgent,
     matSelectCount,
     nativeSelectCount,
+    selectionError,
+    dialogHtml,
     cancelVisible,
+    cancelClosed,
+    dialogAfterCancel,
+    dialogCountAfterCancel,
     url,
   };
   fs.writeFileSync(path.join(outDir, 'summary.json'), JSON.stringify(summary, null, 2), 'utf-8');

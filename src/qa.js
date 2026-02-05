@@ -20,7 +20,8 @@ const maxDepth = Number(args.depth || 2);
 const maxIterations = Number(args.iterations || 3);
 
 const runId = randomId();
-const outDir = path.join(process.cwd(), 'runs', runId);
+const runsRoot = process.env.PM_RUNS_DIR || path.join(process.cwd(), 'runs');
+const outDir = path.join(runsRoot, runId);
 ensureDir(outDir);
 
 const masterPrompt = loadMasterPrompt(path.join(process.cwd(), 'master_prompt.md'));
