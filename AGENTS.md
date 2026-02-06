@@ -17,6 +17,17 @@ Agents should run deterministic, reproducible browser missions, produce actionab
 4. Propose or apply minimal fixes.
 5. Re-run and compare before/after artifacts.
 
+## Mission Spec Contract
+Every substantial run should start with a compact mission spec in notes or prompt:
+- `mission`
+- `target_url` or `target_path`
+- `objective`
+- `success_criteria`
+- `bounds` (`max_steps`, `max_minutes`)
+- `artifacts_required`
+
+If these are missing, infer conservatively and write down assumptions in the summary.
+
 ## Canonical Commands
 - Setup:
 ```powershell
@@ -54,6 +65,8 @@ npm run qa:probe:sweepweave
 - `iter_*_judge.txt`
 - For SweepWeave probe, expect:
 - `sweepweave-pvalue-probe-*.json` with `metrics`, `rehearsal`, and console/page errors.
+- For non-QA missions, include a machine-parseable summary JSON with checks, metrics, and next actions.
+- Every failure/warning needs evidence (`screenshot`, `console`, or structured note).
 
 ## Agent Rules
 - Keep prompts short and operational.
@@ -62,12 +75,32 @@ npm run qa:probe:sweepweave
 - Avoid hardcoding local ports in automation unless discovery/fallback logic exists.
 - If multiple matching UI controls exist, use scoped selectors (for example toolbar-scoped buttons).
 - On Windows, ensure child processes are fully terminated after runs.
+- Prefer small, composable scripts over monolithic one-off automations.
+- When a selector is ambiguous, fix selector scope in code before rerunning.
 
 ## Crash And OOM Resilience
 - Favor short bounded runs over very large batch runs.
 - Reuse existing scripts instead of ad-hoc interactive workflows.
 - Keep session metadata local per repo when possible (`codex-chat-sessions` pattern).
 - If a run is interrupted, resume from artifact inspection before re-running full suites.
+- Do not expand scope after interruption; reduce scope first, then scale back up.
+
+## Quality Gates
+- `gate:determinism`: rerun drift must be explainable.
+- `gate:evidence`: findings without evidence are downgraded to hypotheses.
+- `gate:bounded`: runs must have explicit runtime/step ceilings.
+- `gate:cleanup`: no orphan browser/dev-server processes after run completion.
+- `gate:schema`: final summary should be JSON-parseable by downstream agents.
+
+## Reporting Template
+Use this shape in final summaries:
+- `mission`
+- `target`
+- `result`
+- `key_findings`
+- `evidence_paths`
+- `risks`
+- `next_actions`
 
 ## Editing Guidance
 - Keep changes minimal and focused.

@@ -66,6 +66,31 @@ Current built-ins:
 - `npm run qa`
 - `npm run qa:probe:sweepweave`
 
+## Mission Templates
+
+Use this simple mission spec in prompts or run notes so outputs stay comparable:
+
+```json
+{
+  "mission": "qa|browser-ops|marketing|research",
+  "target_url": "http://localhost:5173",
+  "objective": "one-sentence goal",
+  "success_criteria": [
+    "criterion 1",
+    "criterion 2"
+  ],
+  "constraints": {
+    "max_steps": 40,
+    "max_minutes": 15,
+    "allowed_domains": ["localhost"]
+  },
+  "artifacts_required": [
+    "screenshots",
+    "summary.json"
+  ]
+}
+```
+
 ## Vision In Codex
 
 Codex can reason over screenshots directly in prompts. Use `-i` to attach run artifacts:
@@ -103,6 +128,42 @@ This launches `sweepweave-ts`, loads the current diplomacy pValue storyworld set
 ## Artifacts
 
 By default, run output is written under `runs/`. For large or long test sessions, point `PM_RUNS_DIR` to a larger disk location.
+
+Recommended run report schema:
+
+```json
+{
+  "run_id": "string",
+  "mission": "qa|browser-ops|marketing|research",
+  "target": "string",
+  "started_at": "iso8601",
+  "ended_at": "iso8601",
+  "checks": [
+    {"name": "check_name", "status": "pass|fail|warn", "evidence": ["path-or-note"]}
+  ],
+  "metrics": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "next_actions": ["short list"]
+}
+```
+
+## Quality Gates
+
+- `gate:determinism`: same mission config should yield structurally similar outputs across reruns.
+- `gate:evidence`: every `fail` and `warn` must have screenshot/log evidence.
+- `gate:bounded`: missions must have explicit step/time limits.
+- `gate:cleanup`: browser and dev-server processes must be terminated after completion.
+- `gate:reviewability`: summary output must be machine-parseable JSON.
+
+## Failure Recovery
+
+If a run hangs or is interrupted:
+1. Keep existing artifacts; do not overwrite.
+2. Record interruption reason in a small note file in the run folder.
+3. Restart with tighter bounds (`max_steps`, `max_minutes`) and narrower scope.
+4. Compare only like-for-like runs (same mission spec).
 
 ## Guardrails
 
