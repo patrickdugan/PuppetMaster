@@ -1,8 +1,9 @@
-import argparse
+﻿import argparse
 import json
 import os
 import sys
 import time
+
 
 def main():
     parser = argparse.ArgumentParser(description="Desktop UI probe via pywinauto")
@@ -13,6 +14,8 @@ def main():
     parser.add_argument("--out-dir", required=True)
     parser.add_argument("--max-controls", type=int, default=120)
     parser.add_argument("--timeout-ms", type=int, default=20000)
+    parser.add_argument("--settle-ms", type=int, default=600)
+    parser.add_argument("--close", action="store_true", help="Close app after capture")
     args = parser.parse_args()
 
     try:
@@ -51,6 +54,9 @@ def main():
         window.set_focus()
     except Exception:
         pass
+
+    if args.settle_ms > 0:
+        time.sleep(args.settle_ms / 1000.0)
 
     screenshot_path = os.path.join(args.out_dir, "desktop_1.png")
     try:
@@ -97,7 +103,14 @@ def main():
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
 
+    if args.close:
+        try:
+            app.kill()
+        except Exception:
+            pass
+
     print(json_path)
+
 
 if __name__ == "__main__":
     main()

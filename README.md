@@ -85,6 +85,16 @@ Optional Python override:
 $env:PM_PYTHON = "C:\path\to\python.exe"
 ```
 
+## Desktop Mission
+
+Creates a `summary.json` alongside screenshots and probe output.
+
+```powershell
+npm run desktop:mission -- --app "C:\path\to\App.exe" --window-title "My App" --max-steps 3 --max-minutes 5
+```
+
+See `DESKTOP_SETUP.md` for setup details.
+
 ## Mission Types
 
 - `qa`: UI regression checks, exploratory interaction, bug verification.
