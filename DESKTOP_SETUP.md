@@ -33,3 +33,9 @@ npm run desktop:probe -- --app "C:\path\to\App.exe" --window-title "My App" --ju
 ```powershell
 npm run desktop:mission -- --app "C:\path\to\App.exe" --window-title "My App" --max-steps 3 --max-minutes 5
 ```
+
+## Desktop Loop (prompted)
+
+```powershell
+npm run desktop:loop -- --app "C:\path\to\App.exe" --prompt "Describe the goal" --project "C:\path\to\repo"
+```

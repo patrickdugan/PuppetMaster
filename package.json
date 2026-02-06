@@ -9,6 +9,7 @@
     "qa:probe:sweepweave": "node scripts/probe-sweepweave-pvalues.mjs",
     "desktop:probe": "node src/desktop.js",
     "desktop:mission": "node src/desktop-mission.js",
+    "desktop:loop": "node src/desktop-loop.js",
     "mission": "node src/mission-runner.js",
     "install:browsers": "npx playwright install --with-deps",
     "lint": "node scripts/lint.js"

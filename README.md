@@ -95,6 +95,14 @@ npm run desktop:mission -- --app "C:\path\to\App.exe" --window-title "My App" --
 
 See `DESKTOP_SETUP.md` for setup details.
 
+## Desktop Loop (Prompted)
+
+Run a multi-iteration desktop loop with a top-level goal prompt recorded in `run.json`.
+
+```powershell
+npm run desktop:loop -- --app "C:\path\to\App.exe" --prompt "Find broken control and note likely source files" --project "C:\path\to\repo"
+```
+
 ## Mission Types
 
 - `qa`: UI regression checks, exploratory interaction, bug verification.
