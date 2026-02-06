@@ -1,6 +1,6 @@
 # PuppetMaster
 
-PuppetMaster is a Playwright + OpenAI QA harness for web apps. It runs browser interactions, captures screenshots, sends them to a vision-capable model through the Responses API, and writes artifacts for fast fix/verify loops.
+PuppetMaster is a mission-driven browser automation platform built on Playwright + OpenAI Responses vision. It can run QA loops, UI/browser operations, growth and marketing audits, and structured web research workflows with reproducible run artifacts.
 
 ## Requirements
 
@@ -55,6 +55,17 @@ Webpack app target:
 npm run qa -- --target "C:\path\to\app\package.json" --mode webpack --url http://localhost:8080 --cmd "npm run start"
 ```
 
+## Mission Types
+
+- `qa`: UI regression checks, exploratory interaction, bug verification.
+- `browser-ops`: scripted browser operations and stateful interaction tasks.
+- `marketing`: landing page/funnel checks, messaging and CTA visibility audits.
+- `research`: structured page exploration with evidence capture and traceable outputs.
+
+Current built-ins:
+- `npm run qa`
+- `npm run qa:probe:sweepweave`
+
 ## Vision In Codex
 
 Codex can reason over screenshots directly in prompts. Use `-i` to attach run artifacts:
@@ -68,6 +79,8 @@ You can attach multiple images to compare before/after states:
 ```powershell
 codex -i runs\<run-id>\iter_1.png -i runs\<run-id>\iter_2.png "Did the second screenshot fix the original issue? List remaining defects."
 ```
+
+You can use the same pattern for non-QA missions (for example, messaging consistency or funnel clarity reviews) by attaching mission-specific artifacts.
 
 ## QA Iteration Loop
 
@@ -90,3 +103,9 @@ This launches `sweepweave-ts`, loads the current diplomacy pValue storyworld set
 ## Artifacts
 
 By default, run output is written under `runs/`. For large or long test sessions, point `PM_RUNS_DIR` to a larger disk location.
+
+## Guardrails
+
+- Respect target terms of use, robots rules, and legal boundaries.
+- Use conservative request rates and avoid abusive or deceptive automation.
+- Keep logs/screenshots scoped to task needs and avoid collecting sensitive data unnecessarily.

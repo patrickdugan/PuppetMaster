@@ -1,73 +1,84 @@
-# PuppetMaster
+# AGENTS.md
 
-PuppetMaster is a QA harness for UI projects. It launches a sandboxed browser, explores DOM interactions, captures screenshots, and uses GPT-5-mini vision to judge whether the UI is "good" per `master_prompt.md`.
+## Purpose
+PuppetMaster is a mission-driven browser automation platform using Playwright + OpenAI Responses vision.
+Agents should run deterministic, reproducible browser missions, produce actionable artifacts, and avoid brittle one-off manual flows.
 
-## Quick Start
+## Mission Taxonomy
+- `qa`: UI regressions, acceptance checks, exploratory defect detection.
+- `browser-ops`: repeatable interaction sequences and browser task execution.
+- `marketing`: page messaging, CTA visibility, and funnel/friction audits.
+- `research`: structured capture of observations and evidence across pages.
 
-1) Install dependencies and browser binaries:
+## Default Workflow
+1. Install dependencies and browsers.
+2. Select a mission and run the relevant script (`npm run qa -- ...` or `npm run qa:probe:sweepweave` today).
+3. Inspect artifacts in `runs/<run-id>/`.
+4. Propose or apply minimal fixes.
+5. Re-run and compare before/after artifacts.
 
-```
+## Canonical Commands
+- Setup:
+```powershell
 npm install
 npm run install:browsers
 ```
-
-2) Set your OpenAI key:
-
+- Static target:
+```powershell
+npm run qa -- --target "C:\path\to\index.html" --mode static --url http://localhost:4173
 ```
-set OPENAI_API_KEY=YOUR_KEY
+- Vite target:
+```powershell
+npm run qa -- --target "C:\path\to\app\package.json" --mode vite --url http://localhost:5173 --cmd "npm run dev"
 ```
-
-3) Build target projects before QA
-
-- This tool expects a build artifact to exist for the target.
-- It is not a Next.js-specific workflow.
-- For many Angular/Webpack apps, use Node 16 and run:
-
+- Webpack target:
+```powershell
+npm run qa -- --target "C:\path\to\app\package.json" --mode webpack --url http://localhost:8080 --cmd "npm run start"
 ```
-nvm use 16
-npm run build
-```
-
-4) Run QA against a static HTML folder:
-
-```
-npm run qa -- --target C:\path\to\site --mode static --url http://localhost:4173
+- SweepWeave pValue probe:
+```powershell
+npm run qa:probe:sweepweave
 ```
 
-5) Run QA against a Vite app:
+## Required Environment
+- `OPENAI_API_KEY` must be set.
+- Optional:
+- `OPENAI_MODEL` (default in code: `gpt-5-mini`)
+- `OPENAI_API_URL` (default: Responses API)
+- `PM_RUNS_DIR` (override artifact directory for large runs)
 
-```
-npm run qa -- --target C:\path\to\vite\app --mode vite --url http://localhost:5173 --cmd "npm run dev"
-```
+## Artifact Contract
+- Preserve all run artifacts; do not delete prior runs unless asked.
+- For regular QA runs, expect:
+- `iter_*.png`
+- `iter_*_judge.txt`
+- For SweepWeave probe, expect:
+- `sweepweave-pvalue-probe-*.json` with `metrics`, `rehearsal`, and console/page errors.
 
-6) Run QA against a webpack app (example):
+## Agent Rules
+- Keep prompts short and operational.
+- Prefer deterministic checks over subjective visual guesses.
+- Make mission goals explicit in run notes (what is being measured and why).
+- Avoid hardcoding local ports in automation unless discovery/fallback logic exists.
+- If multiple matching UI controls exist, use scoped selectors (for example toolbar-scoped buttons).
+- On Windows, ensure child processes are fully terminated after runs.
 
-```
-npm run qa -- --target C:\projects\TL-Web\TL-Web\packages\web-ui --mode webpack --url http://localhost:8080 --cmd "npm run start"
-```
+## Crash And OOM Resilience
+- Favor short bounded runs over very large batch runs.
+- Reuse existing scripts instead of ad-hoc interactive workflows.
+- Keep session metadata local per repo when possible (`codex-chat-sessions` pattern).
+- If a run is interrupted, resume from artifact inspection before re-running full suites.
 
-## Logs And Runs
-- Runtime artifacts are written under `runs/` by default.
-- For large runs, set `PM_RUNS_DIR` to a larger disk (for example, `D:\PupperMasterLogs`) before running scripts.
-- `runs/example-meta-prompt.txt` is a template for meta-prompts in logged runs.
-
-## Prompting And Model Use
-- This repo uses GPT-5-mini for vision-only requests.
-- Respect the 1M daily token limit: keep prompts concise, avoid verbose logs, and minimize iterations.
-- If you are unsure about token usage, ping the user before running large batches.
-
-## Prompt Versioning
-- `master_prompt.md` is the latest active prompt used by the harness.
-- Versioned snapshots live alongside it (for example, `master_prompt.v4.md`).
-- When updating prompts, update `master_prompt.md` and add a new versioned file.
+## Editing Guidance
+- Keep changes minimal and focused.
+- Update `README.md` when introducing new user-facing commands or env vars.
+- Add scripts under `scripts/` and expose stable entrypoints in `package.json`.
+- Do not commit generated run artifacts unless explicitly requested.
+- Treat new mission scripts as first-class tooling, not ad-hoc one-offs.
 
 ## Key Files
-- `src/qa.js` - main harness
-- `src/openai.js` - GPT-5-mini vision call + parsing
-- `src/staticServer.js` - static HTML server
-- `master_prompt.md` - success criteria (latest)
-
-## Notes
-- `--mode webpack` uses the same `--cmd` + `--url` strategy as Vite.
-- Adjust `--iterations` and `--depth` to expand coverage.
-- Artifacts are saved in `runs/<id>/`.
+- `src/qa.js`: main QA loop
+- `src/openai.js`: Responses vision call
+- `scripts/probe-sweepweave-pvalues.mjs`: pValue storyworld probe
+- `master_prompt.md`: primary judge prompt
+- `runs/`: runtime outputs
