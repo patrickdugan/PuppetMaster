@@ -9,7 +9,7 @@ const args = parseArgs(process.argv);
 const appPath = args.app ? normalizePath(args.app) : null;
 const goalPrompt = args.prompt || '';
 if (!appPath || !goalPrompt) {
-  console.error('Usage: npm run desktop:loop -- --app "C:\\path\\to\\App.exe" --prompt "Goal" [--project "C:\\path\\to\\repo"] [--window-title "Title"] [--framework godot|unity|electron|web|unknown] [--max-steps 5] [--max-minutes 10]');
+  console.error('Usage: npm run desktop:loop -- --app "C:\\path\\to\\App.exe" --prompt "Goal" [--project "C:\\path\\to\\repo"] [--window-title "Title"] [--framework godot|unity|electron|web|unknown] [--reuse] [--max-steps 5] [--max-minutes 10]');
   process.exit(1);
 }
 
@@ -23,6 +23,7 @@ const maxSteps = Number(args['max-steps'] || 5);
 const maxMinutes = Number(args['max-minutes'] || 10);
 const projectPath = args.project ? normalizePath(args.project) : '';
 const framework = (args.framework || 'unknown').toLowerCase();
+const reuse = args.reuse === true || args.reuse === 'true';
 
 const runId = `loop-desktop-${crypto.randomBytes(4).toString('hex')}`;
 const runsRoot = process.env.PM_RUNS_DIR || path.join(process.cwd(), 'runs');
@@ -45,6 +46,7 @@ const runMeta = {
   project_path: projectPath,
   framework,
   prompt: goalPrompt,
+  reuse,
   started_at: startedAt,
   max_steps: maxSteps,
   max_minutes: maxMinutes,
@@ -97,8 +99,13 @@ while (iteration < maxSteps && Date.now() < deadline) {
     '--max-controls', String(maxControls),
     '--timeout-ms', String(timeoutMs),
     '--settle-ms', String(settleMs),
-    '--close',
   ];
+  if (reuse) {
+    probeArgs.push('--reuse');
+  }
+  if (!reuse) {
+    probeArgs.push('--close');
+  }
   if (lastActionsPath) {
     probeArgs.push('--actions-json', lastActionsPath);
   }

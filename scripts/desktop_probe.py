@@ -17,6 +17,7 @@ def main():
     parser.add_argument("--settle-ms", type=int, default=600)
     parser.add_argument("--close", action="store_true", help="Close app after capture")
     parser.add_argument("--actions-json", default="", help="Path to JSON actions")
+    parser.add_argument("--reuse", action="store_true", help="Reuse existing app/window if found")
     args = parser.parse_args()
 
     try:
@@ -31,10 +32,31 @@ def main():
         cmd = f"{cmd} {args.app_args}"
 
     app = Application(backend=args.backend)
-    app = app.start(cmd)
+    window = None
+
+    if args.reuse:
+        try:
+            app = app.connect(path=args.app)
+        except Exception:
+            app = Application(backend=args.backend)
+
+    if window is None:
+        if args.reuse:
+            try:
+                if args.window_title:
+                    window = app.window(title_re=args.window_title)
+                else:
+                    window = app.top_window()
+                if not (window.exists() and window.is_visible()):
+                    window = None
+            except Exception:
+                window = None
+
+    if window is None:
+        app = Application(backend=args.backend)
+        app = app.start(cmd)
 
     deadline = time.time() + (args.timeout_ms / 1000.0)
-    window = None
     while time.time() < deadline:
         try:
             if args.window_title:
