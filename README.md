@@ -65,6 +65,29 @@ npm run qa -- --target "C:\path\to\app\package.json" --mode webpack --url http:/
 Current built-ins:
 - `npm run qa`
 - `npm run qa:probe:sweepweave`
+- `npm run mission -- --module <module-id>`
+
+Available mission modules:
+- `social.linkedin`
+- `social.x`
+- `social.youtube`
+- `social.tiktok`
+- `email.gmail`
+- `email.outlook`
+- `email.marketing.mailchimp`
+- `email.marketing.klaviyo`
+
+Run a module:
+
+```powershell
+npm run mission -- --module social.linkedin
+```
+
+Override URL:
+
+```powershell
+npm run mission -- --module email.gmail --url "https://mail.google.com/mail/u/0/#inbox"
+```
 
 ## Mission Templates
 
@@ -128,6 +151,10 @@ This launches `sweepweave-ts`, loads the current diplomacy pValue storyworld set
 ## Artifacts
 
 By default, run output is written under `runs/`. For large or long test sessions, point `PM_RUNS_DIR` to a larger disk location.
+
+Mission runs write:
+- `01-<module>.png`
+- `summary.json` (machine-parseable checks/metrics/errors)
 
 Recommended run report schema:
 

@@ -50,6 +50,10 @@ npm run qa -- --target "C:\path\to\app\package.json" --mode webpack --url http:/
 ```powershell
 npm run qa:probe:sweepweave
 ```
+- Mission module run:
+```powershell
+npm run mission -- --module social.linkedin
+```
 
 ## Required Environment
 - `OPENAI_API_KEY` must be set.
@@ -67,6 +71,7 @@ npm run qa:probe:sweepweave
 - `sweepweave-pvalue-probe-*.json` with `metrics`, `rehearsal`, and console/page errors.
 - For non-QA missions, include a machine-parseable summary JSON with checks, metrics, and next actions.
 - Every failure/warning needs evidence (`screenshot`, `console`, or structured note).
+- Mission runner emits this by default at `runs/mission-*/summary.json`.
 
 ## Agent Rules
 - Keep prompts short and operational.
@@ -111,6 +116,8 @@ Use this shape in final summaries:
 
 ## Key Files
 - `src/qa.js`: main QA loop
+- `src/mission-runner.js`: mission orchestration entrypoint
+- `src/modules/catalog.js`: module registry for social/email missions
 - `src/openai.js`: Responses vision call
 - `scripts/probe-sweepweave-pvalues.mjs`: pValue storyworld probe
 - `master_prompt.md`: primary judge prompt
