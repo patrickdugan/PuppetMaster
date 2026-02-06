@@ -69,25 +69,85 @@ def main():
             actions = []
 
     rect = window.rectangle()
+    descendants = []
+    try:
+        descendants = window.descendants()
+    except Exception:
+        descendants = []
+
+    def find_control(action):
+        target_id = action.get("automation_id") or ""
+        target_name = action.get("name") or ""
+        target_type = action.get("control_type") or ""
+        index = action.get("index", 0)
+        matches = []
+        for control in descendants:
+            info = control.element_info
+            if target_id and info.automation_id != target_id:
+                continue
+            if target_name and info.name != target_name:
+                continue
+            if target_type and getattr(info, "control_type", None) != target_type:
+                continue
+            matches.append(control)
+        if not matches:
+            return None
+        try:
+            idx = int(index)
+        except Exception:
+            idx = 0
+        if idx < 0 or idx >= len(matches):
+            idx = 0
+        return matches[idx]
+
     for action in actions:
         if not isinstance(action, dict):
             continue
-        if action.get("type") != "click":
-            continue
-        try:
-            x = int(action.get("x", 0))
-            y = int(action.get("y", 0))
-        except Exception:
-            continue
-        try:
-            window.click_input(coords=(x, y))
-        except Exception:
+        action_type = action.get("type")
+        if action_type == "click":
             try:
-                abs_x = rect.left + x
-                abs_y = rect.top + y
-                window.click_input(coords=(abs_x, abs_y))
+                x = int(action.get("x", 0))
+                y = int(action.get("y", 0))
             except Exception:
-                pass
+                x = 0
+                y = 0
+            try:
+                window.click_input(coords=(x, y))
+            except Exception:
+                try:
+                    abs_x = rect.left + x
+                    abs_y = rect.top + y
+                    window.click_input(coords=(abs_x, abs_y))
+                except Exception:
+                    pass
+        elif action_type == "click_control":
+            control = find_control(action)
+            if control is not None:
+                try:
+                    control.click_input()
+                except Exception:
+                    try:
+                        control.set_focus()
+                        control.click_input()
+                    except Exception:
+                        pass
+        elif action_type == "type_text":
+            text = action.get("text", "")
+            if text:
+                try:
+                    from pywinauto.keyboard import send_keys
+                    send_keys(str(text), with_spaces=True)
+                except Exception:
+                    pass
+        elif action_type == "keypress":
+            keys = action.get("keys", "")
+            if keys:
+                try:
+                    from pywinauto.keyboard import send_keys
+                    send_keys(str(keys))
+                except Exception:
+                    pass
+
         delay_ms = action.get("delay_ms", 0)
         if isinstance(delay_ms, (int, float)) and delay_ms > 0:
             time.sleep(delay_ms / 1000.0)
@@ -101,10 +161,6 @@ def main():
         sys.exit(4)
 
     controls = []
-    try:
-        descendants = window.descendants()
-    except Exception:
-        descendants = []
 
     for control in descendants[: args.max_controls]:
         info = control.element_info

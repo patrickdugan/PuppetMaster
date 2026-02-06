@@ -61,7 +61,7 @@ let iteration = 0;
 let errors = 0;
 let lastActionsPath = '';
 
-const actionPrompt = `You are a desktop QA agent. Given a screenshot and UIA control summary, propose the next 1-3 UI actions to progress the goal.\n\nReturn strict JSON with shape: {"actions":[{"type":"click","x":number,"y":number,"delay_ms":number,"reason":string}],"labels":["label1","label2"],"notes":"..."}.\n\nRules:\n- Coordinates must be in screenshot pixel space with top-left as (0,0).\n- Only click visible, likely-interactive UI.\n- Keep actions minimal.`;
+const actionPrompt = `You are a desktop QA agent. Given a screenshot and UIA control summary, propose the next 1-3 UI actions to progress the goal.\n\nReturn strict JSON with shape: {"actions":[{"type":"click"|"click_control"|"type_text"|"keypress","x":number,"y":number,"automation_id":string,"name":string,"control_type":string,"index":number,"text":string,"keys":string,"delay_ms":number,"reason":string}],"labels":["label1","label2"],"notes":"..."}.\n\nRules:\n- Coordinates must be in screenshot pixel space with top-left as (0,0).\n- Prefer click_control when UIA elements are obvious.\n- For keypress, use pywinauto send_keys format (e.g. "{ENTER}").\n- Only click visible, likely-interactive UI.\n- Keep actions minimal.`;
 
 function frameworkGlobs(fr) {
   if (fr === 'godot') return ['*.gd', '*.tscn', '*.tres', '*.res'];
