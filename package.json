@@ -7,6 +7,7 @@
   "scripts": {
     "qa": "node src/qa.js",
     "qa:probe:sweepweave": "node scripts/probe-sweepweave-pvalues.mjs",
+    "desktop:probe": "node src/desktop.js",
     "mission": "node src/mission-runner.js",
     "install:browsers": "npx playwright install --with-deps",
     "lint": "node scripts/lint.js"

@@ -55,6 +55,36 @@ Webpack app target:
 npm run qa -- --target "C:\path\to\app\package.json" --mode webpack --url http://localhost:8080 --cmd "npm run start"
 ```
 
+## Desktop Probe (Native Apps)
+
+Use the desktop probe to capture a native Windows app window, dump the UIA control tree, and (optionally) run the vision judge on a screenshot.
+
+Requirements:
+- Python 3.9+
+- `pywinauto` and dependencies:
+
+```powershell
+pip install pywinauto pillow pywin32
+```
+
+Run the probe:
+
+```powershell
+npm run desktop:probe -- --app "C:\path\to\App.exe" --window-title "My App"
+```
+
+Optional judge (requires `OPENAI_API_KEY`):
+
+```powershell
+npm run desktop:probe -- --app "C:\path\to\App.exe" --window-title "My App" --judge
+```
+
+Optional Python override:
+
+```powershell
+$env:PM_PYTHON = "C:\path\to\python.exe"
+```
+
 ## Mission Types
 
 - `qa`: UI regression checks, exploratory interaction, bug verification.
