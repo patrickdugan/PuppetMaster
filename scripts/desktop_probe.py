@@ -16,6 +16,7 @@ def main():
     parser.add_argument("--timeout-ms", type=int, default=20000)
     parser.add_argument("--settle-ms", type=int, default=600)
     parser.add_argument("--close", action="store_true", help="Close app after capture")
+    parser.add_argument("--actions-json", default="", help="Path to JSON actions")
     args = parser.parse_args()
 
     try:
@@ -58,6 +59,39 @@ def main():
     if args.settle_ms > 0:
         time.sleep(args.settle_ms / 1000.0)
 
+    actions = []
+    if args.actions_json and os.path.exists(args.actions_json):
+        try:
+            with open(args.actions_json, "r", encoding="utf-8") as f:
+                payload = json.load(f)
+                actions = payload.get("actions", []) if isinstance(payload, dict) else []
+        except Exception:
+            actions = []
+
+    rect = window.rectangle()
+    for action in actions:
+        if not isinstance(action, dict):
+            continue
+        if action.get("type") != "click":
+            continue
+        try:
+            x = int(action.get("x", 0))
+            y = int(action.get("y", 0))
+        except Exception:
+            continue
+        try:
+            window.click_input(coords=(x, y))
+        except Exception:
+            try:
+                abs_x = rect.left + x
+                abs_y = rect.top + y
+                window.click_input(coords=(abs_x, abs_y))
+            except Exception:
+                pass
+        delay_ms = action.get("delay_ms", 0)
+        if isinstance(delay_ms, (int, float)) and delay_ms > 0:
+            time.sleep(delay_ms / 1000.0)
+
     screenshot_path = os.path.join(args.out_dir, "desktop_1.png")
     try:
         image = window.capture_as_image()
@@ -94,6 +128,12 @@ def main():
         "app": args.app,
         "backend": args.backend,
         "window_title": window.window_text(),
+        "window_rect": {
+            "left": rect.left,
+            "top": rect.top,
+            "right": rect.right,
+            "bottom": rect.bottom,
+        },
         "control_count": len(descendants),
         "controls": controls,
         "screenshot": screenshot_path,

@@ -37,5 +37,5 @@ npm run desktop:mission -- --app "C:\path\to\App.exe" --window-title "My App" --
 ## Desktop Loop (prompted)
 
 ```powershell
-npm run desktop:loop -- --app "C:\path\to\App.exe" --prompt "Describe the goal" --project "C:\path\to\repo"
+npm run desktop:loop -- --app "C:\path\to\App.exe" --prompt "Describe the goal" --project "C:\path\to\repo" --framework godot
 ```
