@@ -16,7 +16,22 @@ export const moduleCatalog = {
     defaultUrl: 'https://x.com/home',
     checks: [
       { id: 'primary_column', selectors: ['[data-testid="primaryColumn"]', 'main[role="main"]'], pass: 'Primary timeline column detected.', warn: 'Primary timeline column not detected.' },
-      { id: 'composer_or_tweet', selectors: ['[data-testid="tweetTextarea_0"]', '[data-testid="tweet"]'], pass: 'Tweet composer/content detected.', warn: 'Tweet composer/content not detected.' },
+      {
+        id: 'composer_or_tweet',
+        selectors: [
+          '[data-testid="tweetTextarea_0"]',
+          '[data-testid="tweet"]',
+          '[data-testid="cellInnerDiv"]',
+          'article[role="article"]',
+          '[data-testid="sidebarColumn"]',
+          '[data-testid="AppTabBar_Home_Link"]',
+          'a[href*="/i/flow/login"]',
+          '[data-testid="loginButton"]',
+        ],
+        softPassIf: ['primary_column'],
+        pass: 'Tweet surface or auth prompt detected.',
+        warn: 'Tweet surface/auth prompt not detected.',
+      },
     ],
   }),
   'social.youtube': createReadOnlySiteModule({

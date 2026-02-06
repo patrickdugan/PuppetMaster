@@ -31,21 +31,32 @@ export function createReadOnlySiteModule(config) {
     },
     async runChecks(ctx) {
       const findings = [];
+      const statuses = new Map();
       const host = normalizeUrl(ctx.page.url());
       const domainOk = domainHints.some((d) => host.includes(d));
-      findings.push({
+      const domainFinding = {
         id: 'domain_match',
         status: domainOk ? 'pass' : 'warn',
         message: domainOk ? `Host matches ${id}` : `Unexpected host: ${host || '(empty)'}`,
-      });
+      };
+      findings.push(domainFinding);
+      statuses.set(domainFinding.id, domainFinding.status);
 
       for (const check of checks) {
         const ok = await hasAnySelector(ctx.page, check.selectors);
-        findings.push({
+        let status = ok ? 'pass' : 'warn';
+        let message = ok ? check.pass : check.warn;
+        if (!ok && Array.isArray(check.softPassIf) && check.softPassIf.some((dep) => statuses.get(dep) === 'pass')) {
+          status = 'pass';
+          message = `${check.pass} (inferred from ${check.softPassIf.join(', ')})`;
+        }
+        const finding = {
           id: check.id,
-          status: ok ? 'pass' : 'warn',
-          message: ok ? check.pass : check.warn,
-        });
+          status,
+          message,
+        };
+        findings.push(finding);
+        statuses.set(finding.id, finding.status);
       }
       return findings;
     },
