@@ -32,8 +32,13 @@ Optional settings:
 ```powershell
 $env:OPENAI_MODEL = "gpt-5-mini"
 $env:OPENAI_API_URL = "https://api.openai.com/v1/responses"
+$env:PM_VISION_PROVIDER = "openai" # openai|lens
 $env:PM_RUNS_DIR = "D:\\PuppetMasterRuns"
 ```
+
+`PM_VISION_PROVIDER` notes:
+- `openai` (default): uses Responses API image judging and requires `OPENAI_API_KEY`.
+- `lens`: uploads the screenshot to Google Lens using Playwright and returns scraped Lens text. This mode does not produce the same `PASS`/`FAIL` contract as the OpenAI judge prompt.
 
 ## Run QA
 
