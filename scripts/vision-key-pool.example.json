@@ -1,0 +1,12 @@
+[
+  {
+    "name": "project_1",
+    "path": "keys/project_1_service_account.json",
+    "limit": 1000
+  },
+  {
+    "name": "project_2",
+    "path": "keys/project_2_service_account.json",
+    "limit": 1000
+  }
+]

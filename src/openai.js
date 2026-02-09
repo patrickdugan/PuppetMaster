@@ -36,6 +36,33 @@ function buildLensSummary({ relatedSearchTerm, snippets }) {
   return `LENS MODE RESULT\nrelated_search_term: ${term}\ncontext_cues: ${cues || 'none'}`;
 }
 
+function buildLensJudgeContract(lensSummary) {
+  const lower = String(lensSummary || '').toLowerCase();
+  const failSignals = [
+    '404',
+    '500',
+    'access denied',
+    'forbidden',
+    'not found',
+    'page not available',
+    'something went wrong',
+    'error',
+    'exception',
+    'traceback'
+  ];
+  const hasFailure = failSignals.some((signal) => lower.includes(signal));
+  const status = hasFailure ? 'FAIL' : 'PASS';
+  const rationale = hasFailure
+    ? 'Lens text suggests an error or unavailable state.'
+    : 'No obvious error indicators were found in Lens text.';
+  return `${status}
+RATIONALE: ${rationale}
+EVIDENCE:
+${lensSummary}
+OPTIONAL PATCH:
+N/A`;
+}
+
 async function callLensVision({ images }) {
   if (!Array.isArray(images) || images.length === 0) {
     throw new Error('Lens provider requires at least one image');
@@ -85,6 +112,7 @@ async function callLensVision({ images }) {
         if (!isVisible(node)) continue;
         const txt = (node.textContent || '').replace(/\s+/g, ' ').trim();
         if (txt.length < 4 || txt.length > 120) continue;
+        if (/[{};]/.test(txt)) continue;
         if (out.includes(txt)) continue;
         out.push(txt);
         if (out.length >= 40) break;
@@ -106,7 +134,11 @@ async function callLensVision({ images }) {
 export async function callVisionJudge({ prompt, images, metadata }) {
   if (VISION_PROVIDER === 'lens') {
     const lensText = await callLensVision({ images });
-    return `${lensText}\n\noriginal_prompt_excerpt: ${(prompt || '').slice(0, 240)}\nmetadata: ${JSON.stringify(metadata || {})}`;
+    const contractMode = (process.env.PM_LENS_CONTRACT_MODE || 'judge').toLowerCase();
+    if (contractMode === 'raw') {
+      return `${lensText}\n\noriginal_prompt_excerpt: ${(prompt || '').slice(0, 240)}\nmetadata: ${JSON.stringify(metadata || {})}`;
+    }
+    return buildLensJudgeContract(lensText);
   }
 
   ensureOpenAiKey();

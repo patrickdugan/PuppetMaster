@@ -33,12 +33,61 @@ Optional settings:
 $env:OPENAI_MODEL = "gpt-5-mini"
 $env:OPENAI_API_URL = "https://api.openai.com/v1/responses"
 $env:PM_VISION_PROVIDER = "openai" # openai|lens
+$env:PM_LENS_CONTRACT_MODE = "judge" # judge|raw
 $env:PM_RUNS_DIR = "D:\\PuppetMasterRuns"
 ```
 
 `PM_VISION_PROVIDER` notes:
 - `openai` (default): uses Responses API image judging and requires `OPENAI_API_KEY`.
-- `lens`: uploads the screenshot to Google Lens using Playwright and returns scraped Lens text. This mode does not produce the same `PASS`/`FAIL` contract as the OpenAI judge prompt.
+- `lens`: uploads the screenshot to Google Lens using Playwright and scrapes Lens text.
+
+`PM_LENS_CONTRACT_MODE` notes (only for `PM_VISION_PROVIDER=lens`):
+- `judge` (default): converts Lens output into a `PASS`/`FAIL` compatibility contract for QA loops.
+- `raw`: returns raw Lens summary text plus prompt/metadata excerpt.
+
+## Vision OCR Rotator (TypeScript)
+
+Use this when you need OCR over a screenshot folder with quota-aware key rotation and persistent monthly usage tracking.
+
+Create a key pool file (example at `scripts/vision-key-pool.example.json`) and point each `path` to a Google service-account JSON key.
+
+```powershell
+npm run vision:rotator -- --input-dir "runs\my-run\shots" --key-pool-file "scripts\vision-key-pool.example.json"
+```
+
+Optional flags:
+
+```powershell
+npm run vision:rotator -- --input-dir "runs\my-run\shots" --key-pool-file "keys\pool.json" --crop "300,0,900,720" --include-text --output-json "runs\vision-ocr-report.json" --usage-file "runs\vision-usage.json"
+```
+
+Outputs:
+- Report JSON under `runs/` (or your `--output-json` path)
+- Persistent usage tracker JSON (default `runs/vision-usage.json`)
+
+## X Lead Research (Google Discovery to CSV)
+
+This script discovers `x.com` profiles from Google search results, applies paced navigation with smooth scrolling, and exports lead rows for scoring.
+
+```powershell
+npm run research:x-leads -- --query "site:x.com \"defi trader\"||site:x.com \"perps vc\"" --pages 2 --sessions 2 --max-profiles 80 --out-csv "runs\x-leads.csv"
+```
+
+Optional social-tag merge (following/follower/mutual from an existing CSV export):
+
+```powershell
+npm run research:x-leads -- --query "site:x.com \"defi\"" --tags-csv "C:\path\social_export.csv" --only-mutual --keywords "vc,trader,perps,market maker,defi"
+```
+
+CSV columns:
+- `session_id`
+- `query`
+- `handle`
+- `profile_url`
+- `bio_snippet` (Google snippet)
+- `matched_keywords`
+- `social_type`
+- `is_mutual`
 
 ## Run QA
 

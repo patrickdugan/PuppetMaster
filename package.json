@@ -7,6 +7,9 @@
   "scripts": {
     "qa": "node src/qa.js",
     "qa:probe:sweepweave": "node scripts/probe-sweepweave-pvalues.mjs",
+    "vision:rotator": "tsx scripts/vision-rotator.ts",
+    "research:x-leads": "tsx scripts/x-lead-research.ts",
+    "etherscan:scrape": "node scripts/scrape-etherscan-2025.mjs",
     "desktop:probe": "node src/desktop.js",
     "desktop:mission": "node src/desktop-mission.js",
     "desktop:loop": "node src/desktop-loop.js",
@@ -15,6 +18,12 @@
     "lint": "node scripts/lint.js"
   },
   "dependencies": {
+    "@google-cloud/vision": "^5.3.1",
+    "sharp": "^0.34.4",
     "playwright": "^1.49.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.3"
   }
 }

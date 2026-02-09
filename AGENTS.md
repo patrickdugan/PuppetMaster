@@ -122,3 +122,13 @@ Use this shape in final summaries:
 - `scripts/probe-sweepweave-pvalues.mjs`: pValue storyworld probe
 - `master_prompt.md`: primary judge prompt
 - `runs/`: runtime outputs
+
+## Codex Session Logging
+- Log each Codex troubleshooting/editing session to `codex-chat-sessions/log/`.
+- Include: date/time, user request, actions taken, files changed, and outcome/blockers.
+- Keep logs local and untracked by git (see `.gitignore`).
+
+## Default Behavior
+- Prefer minimal, focused code changes.
+- Validate with the project build command before finishing.
+- Do not commit generated artifacts unless explicitly requested.

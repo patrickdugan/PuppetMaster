@@ -2,3 +2,8 @@ runs/*
 !runs/example-meta-prompt.txt
 !runs/README.md
 codex-chat-sessions/
+node_modules
+release
+*.log
+packages/web-ui.zip
+packages/web-ui/http-server/
