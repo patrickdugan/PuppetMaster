@@ -14,6 +14,7 @@
     "agent:telegram": "tsx scripts/telegram-agent.ts",
     "agent:telegram:schedule": "powershell -ExecutionPolicy Bypass -File scripts/setup-telegram-scheduled-task.ps1",
     "agent:android": "tsx scripts/android-agent.ts",
+    "agent:android:scaffold": "tsx scripts/android-appium-scaffold.ts",
     "etherscan:scrape": "node scripts/scrape-etherscan-2025.mjs",
     "desktop:probe": "node src/desktop.js",
     "desktop:mission": "node src/desktop-mission.js",

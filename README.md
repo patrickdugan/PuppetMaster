@@ -244,6 +244,19 @@ Start emulator AVD if no device is connected:
 npm run agent:android -- --start-emulator Pixel_7_API_34 --wait-sec 120
 ```
 
+## Android Appium Scaffold
+
+Generate a minimal Appium workspace (config + smoke test) next to PuppetMaster:
+
+```powershell
+npm run agent:android:scaffold -- --out-dir "C:\projects\PuppetMaster\PuppetMaster\mobile-appium" --app-id org.telegram.messenger --activity org.telegram.ui.LaunchActivity
+```
+
+Then in the scaffold directory:
+- `npm install`
+- `npm run appium:server`
+- `npm run test:smoke`
+
 ## Mission Types
 
 - `qa`: UI regression checks, exploratory interaction, bug verification.

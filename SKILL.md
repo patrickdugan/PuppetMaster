@@ -60,9 +60,20 @@ Artifacts:
 - `runs/android-agent-<ts>/shots/*.png`
 - `runs/android-agent-<ts>/ui/*.xml`
 
+## New: Android Appium Scaffold
+
+- Generate scaffold:
+  - `npm run agent:android:scaffold -- --out-dir "C:\\projects\\PuppetMaster\\PuppetMaster\\mobile-appium" --app-id org.telegram.messenger --activity org.telegram.ui.LaunchActivity`
+- Then:
+  - `cd mobile-appium`
+  - `npm install`
+  - `npm run appium:server`
+  - `npm run test:smoke`
+
+Use scaffold when you need scripted mobile interactions/assertions beyond bootstrap capture.
+
 ## Run Hygiene
 
 - Keep each run folder immutable after generation.
 - Prefer queue/report messages generated from artifacts, not ad hoc manual summaries.
 - Use dry-run for first execution of new commands.
-
