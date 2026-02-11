@@ -89,6 +89,59 @@ CSV columns:
 - `social_type`
 - `is_mutual`
 
+## TradeLayer Prospect Distill (X Handles to Shortlist)
+
+Use this when you already have a large handle list (for example following/follower exports) and want only likely funds/traders who might use TradeLayer.
+
+Fast path (bio-only, no profile visits):
+
+```powershell
+npm run research:x-tradelayer -- --handles-file "C:\path\following.csv" --mode bio-only --gait-ms 15000 --out-csv "runs\tradelayer-shortlist.csv"
+```
+
+Profile mode (captures profile screenshots and uses OpenAI vision with 15s pacing):
+
+```powershell
+npm run research:x-tradelayer -- --handles-file "C:\path\following.csv" --mode profile --gait-ms 15000 --api-key-file "%USERPROFILE%\Desktop\GPTAPI.txt" --max-profiles 1500 --out-csv "runs\tradelayer-shortlist.csv" --out-json "runs\tradelayer-shortlist.json"
+```
+
+Accepted input columns for CSV:
+- `handle` or `username` or `screen_name`
+- optional `bio` or `bio_snippet` or `description` for `bio-only` mode
+
+Output includes only shortlisted rows with:
+- `handle`, `profile_url`
+- `headline`, `bio`
+- `score`
+- `fund_signal`, `trader_signal`, `tradelayer_fit_signal`
+- `likely_use_tradelayer`
+- `matched_terms`
+
+## VIP List Capture (X List Members to HNWI CSV)
+
+This script visits a private/curated X list members page, captures screenshots for each profile, uses OpenAI vision to extract public profile text, and emits CSVs. It also cross-references the existing TradeLayer shortlist and appends novel qualified leads flagged as HNWI.
+
+Recommended mode is CDP attach (uses your already-logged-in Chrome session):
+
+1. Start Chrome with a debugging port (use a fresh user-data-dir so Chrome allows DevTools remote debugging):
+
+```powershell
+"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="C:\pm-cdp-chrome" "https://x.com/i/lists/<id>/members"
+```
+
+2. Log in to X in that Chrome window (if needed) and leave it open on the members list.
+
+3. Run capture:
+
+```powershell
+npm run research:x-vip-list -- --cdp-url "http://127.0.0.1:9222" --list-url "https://x.com/i/lists/<id>/members" --gait-min-ms 3000 --gait-max-ms 7000 --api-key-file "%USERPROFILE%\Desktop\GPTAPI.txt"
+```
+
+Outputs are written under `runs/vip-list-<ts>/`:
+- `vip-members-all.csv` (all discovered members)
+- `vip-members-tradelayer-shortlist.csv` (only qualified TradeLayer-style leads)
+- `tradelayer-shortlist-with-vip-hnwi.csv` (existing merged shortlist + novel VIP leads with `hnwi_flag=true`)
+
 ## Run QA
 
 Static site target:
@@ -155,6 +208,40 @@ Run a multi-iteration desktop loop with a top-level goal prompt recorded in `run
 
 ```powershell
 npm run desktop:loop -- --app "C:\path\to\App.exe" --prompt "Find broken control and note likely source files" --project "C:\path\to\repo" --framework godot --reuse
+```
+
+## Android Agent (Bootstrap)
+
+Use this to bootstrap Android automation runs with reproducible artifacts (`run.json`, `summary.json`, screenshots, UI dumps). It works with:
+- a connected Android device (USB debugging on), or
+- an emulator already running, or
+- optional emulator launch via AVD name.
+
+Requirements:
+- Android platform tools in PATH (`adb`), and optionally emulator binary (`emulator`).
+
+Dry run:
+
+```powershell
+npm run agent:android -- --dry-run true
+```
+
+Capture 3 iterations from first connected device/emulator:
+
+```powershell
+npm run agent:android -- --iterations 3 --interval-sec 5
+```
+
+Target a specific serial and launch an app first:
+
+```powershell
+npm run agent:android -- --serial emulator-5554 --app-id org.telegram.messenger --activity org.telegram.ui.LaunchActivity
+```
+
+Start emulator AVD if no device is connected:
+
+```powershell
+npm run agent:android -- --start-emulator Pixel_7_API_34 --wait-sec 120
 ```
 
 ## Mission Types
