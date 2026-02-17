@@ -90,6 +90,26 @@ npm run mission -- --module social.linkedin
 - If a run is interrupted, resume from artifact inspection before re-running full suites.
 - Do not expand scope after interruption; reduce scope first, then scale back up.
 
+## X Auth + CDP Runbook (Learned)
+- For authenticated `x.com` workflows, prefer CDP attach to a user-open Chrome session over launching a fresh browser context.
+- Recommended launch (PowerShell):
+```powershell
+Start-Process -FilePath "C:\Program Files\Google\Chrome\Application\chrome.exe" -ArgumentList @(
+  "--remote-debugging-port=9222",
+  "--user-data-dir=C:\pm-cdp-chrome",
+  "https://x.com/i/lists/<id>/members"
+)
+```
+- Attach automation with `chromium.connectOverCDP("http://127.0.0.1:9222")`.
+- Always select the existing `x.com` page context first; do not assume `pages()[0]` is the desired tab.
+- Expect login walls (`/i/flow/login`) and gate runs with explicit timeout + user prompt.
+- Do not rely on cookie DB decryption as a fallback on modern Chrome; app-bound encryption can block extraction.
+- X cookie consent modal can block content/screenshot OCR. Attempt banner dismissal before capture.
+- Wait for profile paint (for example `data-testid="UserName"`/`UserDescription`) before screenshot to avoid spinner-only captures.
+- In CDP mode, disconnect cleanly at end (`browser.close()` on CDP connection) so Node exits; avoid hanging long runs.
+- For high-volume loops, include per-item request timeout + retry and log extraction errors to `errors.log`.
+- Enforce `max-members` after discovery dedupe to prevent accidental overrun.
+
 ## Quality Gates
 - `gate:determinism`: rerun drift must be explainable.
 - `gate:evidence`: findings without evidence are downgraded to hypotheses.

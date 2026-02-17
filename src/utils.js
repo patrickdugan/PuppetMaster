@@ -36,11 +36,30 @@ export function listInteractiveSelectors() {
 export function parseArgs(argv) {
   const args = {};
   for (let i = 2; i < argv.length; i += 1) {
-    const key = argv[i];
-    const val = argv[i + 1];
-    if (!key.startsWith('--')) continue;
-    args[key.slice(2)] = val === undefined || val.startsWith('--') ? true : val;
-    if (val === undefined || val.startsWith('--')) i -= 1;
+    const token = String(argv[i] ?? '');
+    if (!token.startsWith('--')) continue;
+
+    const eqIdx = token.indexOf('=');
+    if (eqIdx > 2) {
+      const k = token.slice(2, eqIdx);
+      const raw = token.slice(eqIdx + 1);
+      if (raw === 'true') args[k] = true;
+      else if (raw === 'false') args[k] = false;
+      else args[k] = raw;
+      continue;
+    }
+
+    const key = token.slice(2);
+    const next = argv[i + 1];
+    if (next === undefined || String(next).startsWith('--')) {
+      args[key] = true;
+      continue;
+    }
+
+    if (next === 'true') args[key] = true;
+    else if (next === 'false') args[key] = false;
+    else args[key] = next;
+    i += 1;
   }
   return args;
 }

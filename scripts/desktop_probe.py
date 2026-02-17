@@ -7,7 +7,7 @@ import time
 
 def main():
     parser = argparse.ArgumentParser(description="Desktop UI probe via pywinauto")
-    parser.add_argument("--app", required=True, help="Path to executable")
+    parser.add_argument("--app", default="", help="Path to executable")
     parser.add_argument("--app-args", default="", help="Arguments to pass to executable")
     parser.add_argument("--backend", default="uia", choices=["uia", "win32"])
     parser.add_argument("--window-title", default="", help="Regex for window title")
@@ -18,6 +18,7 @@ def main():
     parser.add_argument("--close", action="store_true", help="Close app after capture")
     parser.add_argument("--actions-json", default="", help="Path to JSON actions")
     parser.add_argument("--reuse", action="store_true", help="Reuse existing app/window if found")
+    parser.add_argument("--attach-only", action="store_true", help="Attach to an existing window only; never launch app")
     args = parser.parse_args()
 
     try:
@@ -27,14 +28,16 @@ def main():
         sys.exit(2)
 
     os.makedirs(args.out_dir, exist_ok=True)
-    cmd = f"\"{args.app}\""
-    if args.app_args:
-        cmd = f"{cmd} {args.app_args}"
+    cmd = ""
+    if args.app:
+        cmd = f"\"{args.app}\""
+        if args.app_args:
+            cmd = f"{cmd} {args.app_args}"
 
     app = Application(backend=args.backend)
     window = None
 
-    if args.reuse:
+    if args.reuse and args.app:
         try:
             app = app.connect(path=args.app)
         except Exception:
@@ -52,7 +55,22 @@ def main():
             except Exception:
                 window = None
 
-    if window is None:
+    if window is None and args.attach_only:
+        try:
+            from pywinauto import Desktop
+            desktop = Desktop(backend=args.backend)
+            if args.window_title:
+                window = desktop.window(title_re=args.window_title)
+            else:
+                window = desktop.top_window()
+            if window.exists() and window.is_visible():
+                app = Application(backend=args.backend).connect(handle=window.handle)
+            else:
+                window = None
+        except Exception:
+            window = None
+
+    if window is None and not args.attach_only:
         app = Application(backend=args.backend)
         app = app.start(cmd)
 
@@ -204,6 +222,7 @@ def main():
 
     payload = {
         "app": args.app,
+        "attach_only": args.attach_only,
         "backend": args.backend,
         "window_title": window.window_text(),
         "window_rect": {

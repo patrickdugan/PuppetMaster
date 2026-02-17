@@ -17,6 +17,7 @@ description: Operate PuppetMaster for QA, growth research, Telegram distribution
   - `npm run desktop:probe -- ...`
   - `npm run desktop:mission -- ...`
   - `npm run desktop:loop -- ...`
+  - `npm run desktop:describe -- --input-dir "<runs\\tl-live-audit\\schema-flow-...>" --out-dir "<same or another folder>"`
 
 ## New: Telegram Agent
 
@@ -77,3 +78,4 @@ Use scaffold when you need scripted mobile interactions/assertions beyond bootst
 - Keep each run folder immutable after generation.
 - Prefer queue/report messages generated from artifacts, not ad hoc manual summaries.
 - Use dry-run for first execution of new commands.
+- For desktop UIA/DOM instability, rely on screenshot + coordinate flows first, then run `desktop:describe` to annotate captured states before adjusting click maps.
