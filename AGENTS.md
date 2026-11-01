@@ -152,3 +152,13 @@ Use this shape in final summaries:
 - Prefer minimal, focused code changes.
 - Validate with the project build command before finishing.
 - Do not commit generated artifacts unless explicitly requested.
+
+
+## SilicoBuddy Research Handoff (Codex / Firefox)
+- Use `npm run test:silicobuddy` and an offline `npm run research:silicobuddy -- --task "..." ` before any live browser run.
+- Codex should gather exact git revisions, eval IDs, falsifiers, baselines, controls, and source links locally, then write a compact experiment packet. Supply it with `--plan-file` to skip a redundant ChatGPT planning turn.
+- For browser exchange, launch the dedicated Playwright Firefox profile using `--live --approve-send` with a verified Silico thread URL, composer selector, and assistant reply selector. Login happens manually in that profile.
+- The browser adapter may submit bounded **chat messages** only. It never presses Silico's experiment Launch button, enables Auto-accept, modifies credentials, or starts compute. Keep those as separately approved actions.
+- Maintain private `runs/silicobuddy-*/summary.json` receipts. Review real RU/GPU billing in Silico. Do not count estimated characters/4 as billable token usage.
+- When a browser send times out, inspect the actual thread before retrying; a submitted request may still be running.
+- Prefer deterministic local inspection and a single Silico plan over repeated broad high-context model conversations.
