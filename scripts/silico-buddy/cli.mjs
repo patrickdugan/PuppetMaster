@@ -9,6 +9,7 @@ const flags = parseArgs(process.argv.slice(2));
 const help = 'SilicoBuddy: ChatGPT ↔ Silico bounded Firefox handoff\n' +
   'npm run research:silicobuddy -- --task "research question" [--live --approve-send]\n' +
   '--task-file FILE | --task TEXT    Research question\n' +
+  '--plan-file FILE                  Reuse a Codex/local experiment packet and skip ChatGPT planner\n' +
   '--live                          Start dedicated Playwright Firefox (default: dry-run)\n' +
   '--approve-send                  Explicitly permit ChatGPT and Silico message submission\n' +
   '--debrief-send                  Submit a third message back to ChatGPT\n' +
@@ -28,6 +29,8 @@ const opts = config({
 });
 const task = String(flags.task || (flags['task-file'] ? await fs.readFile(flags['task-file'], 'utf8') : '')).trim();
 if (!task) { console.error(help); process.exit(2); }
+const priorPlan = flags['plan-file'] ? String(await fs.readFile(flags['plan-file'], 'utf8')).trim() : null;
+if (flags['plan-file'] && !priorPlan) throw new Error('--plan-file is empty');
 const runId = `silicobuddy-${digest(task).slice(0, 12)}-${new Date().toISOString().replace(/[:.]/g, '-')}`;
 const outRoot = path.resolve(String(flags['out-dir'] || process.env.PM_RUNS_DIR || 'runs'));
 const outDir = path.join(outRoot, runId);
@@ -38,11 +41,13 @@ const record = { runId, taskHash: digest(task), mode: flags.live ? 'live' : 'dry
 const persist = async () => fs.writeFile(path.join(outDir, 'summary.json'), JSON.stringify(record, null, 2));
 let browserContext;
 try {
-  const first = chatgptPacket(task, opts);
-  await writePrompt('01-chatgpt-packet.txt', first);
-  record.stages.push(receipt('chatgpt_planner', first));
+  const first = priorPlan ? null : chatgptPacket(task, opts);
+  if (first) {
+    await writePrompt('01-chatgpt-packet.txt', first);
+    record.stages.push(receipt('chatgpt_planner', first));
+  }
   if (!flags.live) {
-    const silico = silicoPacket(task, '[PASTE CHATGPT EXPERIMENT PACKET HERE]', opts);
+    const silico = silicoPacket(task, priorPlan || '[PASTE CHATGPT EXPERIMENT PACKET HERE]', opts);
     await writePrompt('02-silico-packet-template.txt', silico);
     record.stages.push(receipt('silico_plan_template', silico));
     record.status = 'dry_run_complete';
@@ -66,25 +71,31 @@ try {
     const chatOutput = '[data-message-author-role="assistant"]';
     const silicoOutput = String(flags['silico-reply']);
     let sent = 0;
-    record.stages[0].status = 'submission_attempted'; await persist();
-    const chatResult = await transact(chat, 'chatgpt', '#prompt-textarea,[data-testid="prompt-textarea"],div.ProseMirror[contenteditable="true"]', chatOutput, first, opts);
-    sent++; record.stages[0] = receipt('chatgpt_planner', first, chatResult, 'submitted');
-    await writePrompt('01-chatgpt-reply.txt', redact(clip(chatResult, opts.maxReplyChars)));
-    await persist();
+    let chatResult = priorPlan;
+    if (!priorPlan) {
+      const idx = record.stages.length - 1;
+      record.stages[idx].status = 'submission_attempted'; await persist();
+      chatResult = await transact(chat, 'chatgpt', '#prompt-textarea,[data-testid="prompt-textarea"],div.ProseMirror[contenteditable="true"]', chatOutput, first, opts);
+      sent++; record.stages[idx] = receipt('chatgpt_planner', first, chatResult, 'submitted');
+      await writePrompt('01-chatgpt-reply.txt', redact(clip(chatResult, opts.maxReplyChars)));
+      await persist();
+    }
     const silicoPrompt = silicoPacket(task, chatResult, opts);
     await writePrompt('02-silico-packet.txt', silicoPrompt);
     if (sent >= opts.maxSubmissions) throw new Error('Submission budget exhausted before Silico');
+    const silicoIdx = record.stages.length;
     record.stages.push(receipt('silico_plan', silicoPrompt, '', 'submission_attempted')); await persist();
     const silicoResult = await transact(silico, 'silico', String(flags['silico-composer']), silicoOutput, silicoPrompt, opts);
-    sent++; record.stages[1] = receipt('silico_plan', silicoPrompt, silicoResult, 'submitted');
+    sent++; record.stages[silicoIdx] = receipt('silico_plan', silicoPrompt, silicoResult, 'submitted');
     await writePrompt('02-silico-reply.txt', redact(clip(silicoResult, opts.maxReplyChars)));
     const debrief = debriefPacket(task, silicoResult, opts);
     await writePrompt('03-chatgpt-debrief-template.txt', debrief);
     if (flags['debrief-send']) {
       if (sent >= opts.maxSubmissions) throw new Error('Submission budget exhausted before debrief');
+      const criticIdx = record.stages.length;
       record.stages.push(receipt('chatgpt_critic', debrief, '', 'submission_attempted')); await persist();
       const feedback = await transact(chat, 'chatgpt', '#prompt-textarea,[data-testid="prompt-textarea"],div.ProseMirror[contenteditable="true"]', chatOutput, debrief, opts);
-      record.stages[2] = receipt('chatgpt_critic', debrief, feedback, 'submitted');
+      record.stages[criticIdx] = receipt('chatgpt_critic', debrief, feedback, 'submitted');
       await writePrompt('03-chatgpt-critique.txt', redact(clip(feedback, opts.maxReplyChars)));
     } else { record.stages.push(receipt('chatgpt_critic_template', debrief)); }
     record.status = 'plan_review_required';
