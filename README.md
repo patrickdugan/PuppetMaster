@@ -399,3 +399,12 @@ If a run hangs or is interrupted:
 - Respect target terms of use, robots rules, and legal boundaries.
 - Use conservative request rates and avoid abusive or deceptive automation.
 - Keep logs/screenshots scoped to task needs and avoid collecting sensitive data unnecessarily.
+
+## SilicoBuddy: ChatGPT and Silico research handoff
+
+PuppetMaster includes a bounded Firefox Auto-research handoff with a free offline dry run, explicit submit authorization, short prompts, local receipts, and manual approval for Silico compute. See [SilicoBuddy setup and safeguards](docs/SILICO_BUDDY.md).
+
+```powershell
+npm run test:silicobuddy
+npm run research:silicobuddy -- --task "Evaluate a small-model transfer hypothesis" --max-ru 0.2 --max-gpu-hours 0
+```
