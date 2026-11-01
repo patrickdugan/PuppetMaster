@@ -44,3 +44,13 @@ The script opens two Firefox tabs and waits for you to sign in and press Enter a
 Codex/PuppetMaster handles deterministic source inspections, code and tests. ChatGPT designs the smallest discriminating experiment. Silico receives the short experimental packet and can produce a plan for human approval. ChatGPT's optional debrief checks scientific validity before the next step. Preserve source identifiers and reported measurements instead of copying whole transcripts between models.
 
 Use a verified first-party integration instead of browser automation if Silico exposes a suitable supported interface in future.
+
+## Cheapest path: Codex first
+
+When Codex or a local script already produced an experiment design, use `--plan-file` to skip the initial ChatGPT request entirely. The runner sends **one** message to Silico, leaving the ChatGPT critique as a local prompt unless `--debrief-send` is enabled.
+
+```powershell
+npm run research:silicobuddy -- --task "Measure transfer on held-out evals" --plan-file .\codex-experiment-packet.txt --max-ru 0.2
+```
+
+For a live run, combine `--plan-file` with the inspected Firefox selectors and `--live --approve-send` flags. The shortcut saves one model request but does not determine Silico's actual billed RU.
