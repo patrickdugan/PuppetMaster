@@ -23,7 +23,9 @@
     "desktop:describe": "node scripts/desktop-describe.mjs",
     "mission": "node src/mission-runner.js",
     "install:browsers": "npx playwright install --with-deps",
-    "lint": "node scripts/lint.js"
+    "lint": "node scripts/lint.js",
+    "research:silicobuddy": "node scripts/silico-buddy/cli.mjs",
+    "test:silicobuddy": "node --test scripts/silico-buddy/test.mjs"
   },
   "dependencies": {
     "@google-cloud/vision": "^5.3.1",
