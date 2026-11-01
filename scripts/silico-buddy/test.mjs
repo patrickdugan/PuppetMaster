@@ -43,3 +43,9 @@ test('receipts report estimates, not invented costs', () => {
 test('short budget blocks oversized packet', () => {
   assert.throws(() => chatgptPacket('a'.repeat(9900), {maxPromptChars:500}));
 });
+
+test('optional plan-file mode is documented as one Silico submission', () => {
+  const template = silicoPacket('hypothesis', 'Codex local packet', {});
+  assert.match(template, /Codex local packet/);
+  assert.ok(template.length <= config().maxPromptChars);
+});
